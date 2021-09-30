@@ -1,0 +1,18 @@
+## vscode报错无法执行vue项目建设
+
++ 报错信息
+
+  + ```js
+    报错：vue : 无法加载文件 C:\Users\xxx\AppData\Roaming\npm\vue.ps1，因为在此系统上禁止运行脚本。有关详细信息，请参阅 https:/go.microsoft.com/fwlink/?LinkID=135170 中about_Execution_Policies。
+    ```
+
++ 解决方案
+
+  + 以管理员身份运行VScode在终端输入
+
+    + ```js
+      Set-ExecutionPolicy RemoteSigned
+      ```
+
+
+
