@@ -269,6 +269,7 @@ window.onload = function () {
     }
     setRemFont()
 }
+
 ```
 
 
@@ -981,5 +982,20 @@ window.onbeforeunload = function (e) {
     console.log("微应用返回");
       window.parent.postMessage('wyy', '*');
     };
+```
+
+### 碰到的问题
+
++ 在**ios**中**onbeforeunload**失效，发送不出来事件
+  + 原因是ios中淘汰了**onbeforeunload**事件
+    + 可以使用pagehide
+
+```js
+   window.addEventListener('pagehide', () => {
+  
+   })
+   window.onpagehide=function(){
+      
+   }
 ```
 

@@ -369,6 +369,14 @@ git push origin master
 
 ## 1、分支的查看，创建，切换，合并，删除
 
++ 查看远端信息
+
+```nginx
+ git remote -v
+```
+
+
+
 1. 创建并且切换到分支dev
 
 ```nginx

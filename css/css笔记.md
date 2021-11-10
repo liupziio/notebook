@@ -174,6 +174,23 @@ letter-spacing: 5px;
 
 
 
+## 设置文本根据宽度等分站位
+
+```css
+  .title {
+            height: 30px;
+            width: 100px;
+            text-align: justify;
+            &::after {
+              content: " ";
+              display: inline-block;
+              width: 100%;
+            }
+          }
+```
+
+
+
 
 
 # 去除css自带样式
@@ -233,6 +250,8 @@ outline: none;
 ```css
 user-select:none;
 ```
+
+
 
 
 
