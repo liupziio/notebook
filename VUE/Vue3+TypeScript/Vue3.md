@@ -733,11 +733,11 @@ app.mount("#app");
 
 ##### 封装全局数据格式化
 
-**可用于需要统一处理的数据**
+**可用于需要统一理的数据**
 
+![image-20211007142318140](.\Vue3.assets\image-20211007142318140.png)
 
-
-<img src="C:\Users\刘培志\Desktop\note book\VUE\Vue3.assets\image-20211007142318140.png" alt="image-20211007142318140" style="zoom:100%;" />
+<img src="F:\learn\note book\VUE\Vue3+TypeScript\Vue3.assets\image-20211007142318140.png" alt="image-20211007142318140" style="zoom:100%;" />
 
 
 
@@ -747,7 +747,7 @@ app.mount("#app");
 
 
 
-![image-20211007130728367](C:\Users\刘培志\Desktop\note book\VUE\Vue3.assets\image-20211007130728367.png)
+![image-20211007130728367](.\Vue3.assets\image-20211007130728367.png)
 
 
 
@@ -780,7 +780,7 @@ app.mount("#app");
 
 **效果**
 
-![image-20211007145028270](C:\Users\刘培志\Desktop\note book\VUE\Vue3.assets\image-20211007145028270.png)
+![image-20211007145028270](.\Vue3.assets\image-20211007145028270.png)
 
 
 
@@ -937,6 +937,13 @@ export default {
 
 
 
+# 五、VueX五大核心
+
+## 1、state
+
+
+
+## 2、getters
 
 
 
@@ -948,28 +955,12 @@ export default {
 
 
 
+# 六、TypeScript 与 Vue3
 
 
 
+## 1、类型
 
+### 1.1 ref () 获取组件   InstanceType
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+>利用 InstanceType (实例类型) 来获取组件类型
