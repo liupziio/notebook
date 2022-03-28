@@ -220,7 +220,87 @@ export default {
 
 
 
-# 二、插槽
+# 二、两种setup使用
+
+## 1、函数式 setup
+
+```js
+<script lang="ts">
+import { defineComponent, computed, ref, watch } from 'vue';
+import { useStore } from '@/store';
+import { usePermission } from '@/hooks/use-permission';
+
+import HyTable from '@/base-ui/table';
+
+export default defineComponent({
+  //定义组件
+  components: {
+    HyTable
+  },
+  props: {
+    //props使用
+    contentTableConfig: {
+      type: Object,
+      require: true
+    },
+    pageName: {
+      type: String,
+      required: true
+    }
+  },
+  emits: ['newBtnClick', 'editBtnClick'], //emits事件
+  setup(props, { emit }) {
+    //在这里拿到props与emit
+    const store = useStore();
+    return {
+      store
+    };
+  }
+});
+</script>
+```
+
+
+
+## 2、script setup
+
+
+
+```js
+<script lang="ts" setup>
+import { ref, onMounted,defineProps, withDefaults,/*设置props默认值*/ watchEffect } from 'vue';
+import { EChartsOption } from 'echarts';
+import useEchart from '../hooks/useEchart';
+//withDefaults 第一个参数为props 第二个为props中的默认值 并且会返回出来一个props可以使用返回值获取props中的值
+// defineProps 定于propsdefineProps<{}>()
+// 定义props
+const props = withDefaults(
+  defineProps<{
+    options: EChartsOption;
+    width?: string;//设置是否必传(?)
+    height?: string;
+  }>(),
+  {
+    width: '100%',
+    height: '360px'
+  }
+);
+
+const echartDivRef = ref<HTMLElement>();
+
+onMounted(() => {
+  const { setOptions } = useEchart(echartDivRef.value!);
+
+  watchEffect(() => {
+    setOptions(props.options);
+  });
+});
+</script>
+```
+
+
+
+## 3、两者差异
 
 
 
@@ -737,7 +817,7 @@ app.mount("#app");
 
 ![image-20211007142318140](.\Vue3.assets\image-20211007142318140.png)
 
-<img src="F:\learn\note book\VUE\Vue3+TypeScript\Vue3.assets\image-20211007142318140.png" alt="image-20211007142318140" style="zoom:100%;" />
+<img src=".\Vue3.assets\image-20211007142318140.png" alt="image-20211007142318140" style="zoom:100%;" />
 
 
 
@@ -963,4 +1043,402 @@ export default {
 
 ### 1.1 ref () 获取组件   InstanceType
 
->利用 InstanceType (实例类型) 来获取组件类型
+>利用 InstanceType (实例类型) 来获取拥有构造函数的实例
+
+```js
+ <login-account ref="accountRef" />//组件
+
+    //使用ref获取组件实例
+
+const accountRef = ref<InstanceType<typeof LoginAccount>>()
+```
+
+### 1.2 使用 Vuex useStore *
+
+**问题：**
+
+>因 vuex 对 typeScript 支持不友好，在vuex的useStore中的类型为any 并没有类型检测，如下：
+
+![image-20220116125414319](.\Vue3.assets\image-20220116125414319.png)
+
+
+
+**解决问题：**
+
+>处理 **useStore** ， 在store的index.ts中导出一个函数替换useStore
+
+
+
+![image-20220116125756965](.\Vue3.assets\image-20220116125756965.png)
+
+
+
+![image-20220116130212788](.\Vue3.assets\image-20220116130212788.png)
+
+
+
+**结果：**
+
+
+
+
+
+
+
+
+
+## 2、router
+
+### 2.1 动态路由创建文件
+
+> 避免手动创建文件 与 router 映射 使用 corderwhy 的工具
+
+1. **安装工具**
+
+npm工具名称 : **“corderwhy” ** 
+
+```cmd
+npm install corderwhy
+```
+
+2. **使用 ** 
+
+```cmd
+#这里的文件路径与路由路径一致，(建议与接口返回路径一致)
+
+coderthy add3page 文件名称 -d 文件路径
+coderwhy add3page test -d src/views/main/test
+
+```
+
+3. **结果** 
+
+> 会根据命令创建出不同的 路由 与 vue文件 （并有相应代码）
+
+![image-20220116142744756](.\Vue3.assets\image-20220116142744756.png)
+
+
+
+### 2.2 require.context 加载文件使用
+
+> **require.context** 是 **webpack** 中的方法，可加载上下文 文件
+
+1. **使用方法** 
+
+>1、**require.context**(查找的文件夹路径, 是否进行递归查找, 匹配的文件（正则）)
+>
+>2、使用 **routeFiles.keys()** 获取加载到的所有文件
+
+```js
+
+const routeFiles = require.context('../router/main', true, /\.ts/);
+// console.log(routeFiles.keys());
+
+获取到(../router/main)相对路径
+//["./analysis/dashboard/dashboard.ts","./analysis/overview/overview.ts"]
+```
+
+
+
+### 2.3 实现动态路由
+
+**注意：**
+
++ 动态路由中 **el-menu** 组件用的是后台传回来的数组(store.state.login.userMenus)
+
+大致结构：
+
+```json
+[
+    {
+        "id": 38,
+        "name": "系统总览",
+        "type": 1,
+        "url": "/main/analysis",
+        "icon": "el-icon-monitor",
+        "sort": 1,
+        "children": [
+            {
+                "id": 39,
+                "url": "/main/analysis/overview",
+                "name": "核心技术",
+                "sort": 106,
+                "type": 2,
+                "children": null,
+                "parentId": 38
+            },
+        ]
+    },
+    {
+        "id": 9,
+        "name": "商品中心",
+        "type": 1,
+        "url": "/main/product",
+        "icon": "el-icon-goods",
+        "sort": 3,
+        "children": [
+            {
+                "id": 15,
+                "url": "/main/product/category",
+                "name": "商品类别",
+                "sort": 104,
+                "type": 2,
+                "children": [
+                    {
+                        "id": 30,
+                        "url": null,
+                        "name": "创建类别",
+                        "sort": null,
+                        "type": 3,
+                        "parentId": 15,
+                        "permission": "system:category:create"
+                    }
+                ],
+                "parentId": 9
+            },
+        ]
+    }
+ 
+]
+```
+
+
+
+> map-menus.ts 文件
+
+```js
+import { RouteRecordRaw } from 'vue-router';
+// allRoutes为所有的 userMenus为请求回来的
+export function mapMenusToRoutes(userMenus: any[]): RouteRecordRaw[] {
+  const routes: RouteRecordRaw[] = [];
+
+  // 1.先去加载默认所有的routes
+  const allRoutes: RouteRecordRaw[] = [];
+  // require.context加载文件夹
+  // require.context(文件夹路径, 是否进行递归查找, 匹配的文件)
+  // const routeFiles = require.context('../router/main', true, /\.ts$/);//以ts结尾
+  const routeFiles = require.context('../router/main', true, /\.ts/); //.ts/.tsx
+  console.log(routeFiles.keys());
+  // 使用keys获取值
+  routeFiles.keys().forEach((key) => {
+    // 循环获取单个文件(因获取的是相对路径所以使用 . 来切割)
+    const route = require('../router/main' + key.split('.')[1]);
+    // route.default获取的就是route对象了
+    allRoutes.push(route.default);
+  });
+  console.log(allRoutes);
+
+  // 2.根据菜单获取需要添加的routes
+  // userMenus:
+  // type === 1 -> children -> type === 1
+  // type === 2 -> url -> route
+  const _recurseGetRoute = (menus: any[]) => {
+    for (const menu of menus) {
+      if (menu.type === 2) {
+        console.log(menu);
+
+        const route = allRoutes.find((route) => route.path === menu.url);
+        if (route) routes.push(route);
+      } else {
+        _recurseGetRoute(menu.children);
+      }
+    }
+  };
+
+  _recurseGetRoute(userMenus);
+
+  return routes;
+}
+
+```
+
+> vuex store 文件
+
+```js
+import { mapMenusToRoutes } from '@/utils/map-menus';  
+mutations: {
+    changeUserMenus(state, userMenus: any) {
+      state.userMenus = userMenus;
+
+      console.log('注册动态路由');
+
+      // userMenus => routes
+      const routes = mapMenusToRoutes(userMenus);
+
+      // 将routes => router.main.children
+      routes.forEach((route) => {
+        // 添加到main路径下
+        router.addRoute('main', route);
+      });
+    }
+  },
+```
+
+### 2.4 路由注册执行顺序
+
+![image-20220121121703169](.\Vue3.assets\image-20220121121703169.png)
+
+
+
+
+
+## 3、组件中的双向绑定
+
+
+
+### 3.1 方式
+
+#### 3.1.1 子组件使用v-bind直接修改props(不推荐)
+
+**不推荐原因**
+
+>Vue设计原则为单项数据留，建议不要子组件直接修改 **props**
+>
+>eslint 也会报错如下
+
+```js
+Unexpected mutation of "formData" prop.eslintvue/no-mutating-props
+// no-mutating-props: 不要变化props
+“formData”prop.eslintvue/no-mutating-props的意外突变
+```
+
+**使用方案**
+
+```typescript
+ //子组件    formData为数据 searchFormConfig为动态绑定配置文件
+<hy-form v-bind="searchFormConfig" :formData="formData" />
+
+//父组件
+  setup() {
+    const formData = reactive({
+      id: '',
+      name: '',
+      passwor: '',
+      sport: '',
+      createTime: ''
+    });
+    return {
+      formData,
+      searchFormConfig
+    };
+  }
+//传给组件配置文件
+import { IForm } from '@/base-ui/form';
+
+export const searchFormConfig: IForm = {
+  formItems: [
+    {
+      field: 'id',//这里为绑定model
+      type: 'input',
+      label: 'id',
+      placeholder: '请输入id'
+    }
+  ]
+};
+//子组件使用
+  props: {
+    formData: {
+      type: Object,
+      required: true
+    },
+  }
+
+  <el-input
+    :placeholder="item.placeholder"
+    v-bind="item.otherOptions"
+    :show-password="item.type === 'password'"
+    v-model="formData[`${item.field}`]"//用配置文件的field绑定formData中的字段
+  />
+```
+
+**实现成果**
+
+![image-20220122151442939](.\Vue3.assets\image-20220122151442939.png)
+
+
+
+
+
+
+
+#### 3.1.2 使用组件双向绑定 v-model modelValue (误区)
+
+
+
+**使用方案** 
+
+```js
+//将动态绑定修改为v-mode (组件双向绑定)
+//<hy-form v-bind="searchFormConfig" :formData="formData" />
+//这里其实跟3.1.1的思路是相同的 用 :modelValue="formData" 也是一样的结果
+<hy-form v-bind="searchFormConfig" v-model="formData" />
+
+//子组件
+     props: {
+    modelValue: {
+      type: Object,
+      required: true
+    },
+   }
+//发出事件 updata:modelValue (可随意修改)
+ emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    //计算属性 双向绑定
+    const formData = computed({
+      get: () => props.modelValue,//获取
+      set: (newValue) => {//设置
+  # 并且这里并没有调用 
+  			concsole.log('-------')
+        emit('update:modelValue', newValue);
+      }
+    });
+    return {
+      formData
+    };
+  }
+```
+
+
+
+#### 3.1.3 使用v-model并使用watch监听(正确用法)
+
+**使用方案**
+
+
+
+> 遵循 **Vue** 单向数据流规则 使用 **emit ** 发出数据变化
+
+```js
+ //父组件
+<hy-form v-bind="searchFormConfig" v-model="formData" />
+
+   
+   
+//子组件
+props: {
+    modelValue: {
+      type: Object,
+      required: true
+    },
+ }
+
+
+ emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    const formData = ref({//在组件中定义一个ref
+      ...props.modelValue
+    });
+    watch(//监听变量变化并传出去
+      formData,
+      (newValue) => {
+        console.log(789);
+
+        emit('update:modelValue', newValue);
+      },
+      { deep: true }
+    );
+    return {
+      formData
+    };
+```
+
