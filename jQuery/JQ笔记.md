@@ -94,3 +94,217 @@ $(document).ready(function(){
 });
 ```
 
+## 获取表单提交序列化数据
+
+- .serialize()
+
+```javascript
+alert($("form").serialize())
+#弹出这个表单的数据
+```
+
+## 阻止默认行为
+
+- preventDefault()
+
+```javascript
+$("a").click(function(event){
+    event.preventDefault();
+  });
+#阻止a的默认行为
+##例如 ：href
+```
+
+
+
+# 一、选择器
+
+
+
+## 1.1 基本选择器
+
+1. id选择器 高级 #id名
+2. 类选择器  .类名
+3. 元素选择器  P
+4. 通配符选择器 * 
+5. 群组选择器 
+
+## 1.2 层级选择器
+
+1. 后代选择器 div p
+2. 子代选择器 div>P
+3. next div+p
+4. nextAll div~p
+
+## 1.3 过滤选择器 ：
+
+### 1.3.1 基本过滤选择器
+
+：first、：last 、：not（选择器）、：even、：odd
+
+### 1.3.2 内容过滤选择器
+
+1. ：contains（‘text’）
+2. ：empty
+3. ：parent
+4. ：has（选择器）
+
+### 1.3.3 可见性选择器
+
+1. ：hidden  css  display：none
+2. ：visible
+3. 属性选择器
+4. 子元素选择器
+5. nth-child(1) 
+
+# 二、方法
+
+
+
+## 2.1 自定义属性data-
+
+
+
++ 可以放置一些后期需要获取的数据
+  + data-id=“132”
+  + data-cid=“465”
+
+https://blog.csdn.net/mengzuchao/article/details/80503828
+
+
+
+```js
+<li id="getId" data-id="122" data-vice-id="11">获取id</li>
+```
+
+
+
++ 注意点
+
+这里自定义属性赋值，**element** 上是没有变化的，但是获取的是赋值之后的值
+
+
+
+
+
++ **getAttribute()方法**
+
+```js
+const getId = document.getElementById('getId');
+// //getAttribute()取值属性
+console.log(getId.getAttribute("data-id"));//122
+console.log(getId.getAttribute("data-vice-id"));//11
+// //setAttribute()赋值属性
+getId.setAttribute("data-id","48");
+console.log(getId.getAttribute("data-id"));//48
+```
+
+
+
++ **dataset()方法**
+
+```js
+//data-前缀属性可以在JS中通过dataset取值，更加方便
+console.log(getId.dataset.id);//112
+//data-vice-id连接取值使用驼峰命名法取值 
+console.log(getId.dataset.viceId);//11
+ 
+//赋值
+getId.dataset.id = "113";//113
+getId.dataset.viceId--;//10
+ 
+//新增data属性
+getId.dataset.id2 = "100";//100
+ 
+//删除，设置成null，或者delete
+getId.dataset.id2 = null;//null
+delete getId.dataset.id2;//undefind
+```
+
+
+
++ **jquery data() 方法**
+
+```js
+//获取
+var id = $("#getId").data("id"); //122
+var viceId = $("#getId").data("vice-id"); //11
+//赋值
+$("#getId").data("id","100");//100
+```
+
+
+
++ **jquery attr()方法**
+
+```js
+var id = $("#getId").attr("data-id"); //122
+var viceId = $("#getId").attr("data-vice-id"); //11
+//赋值
+$("#getId").attr("data-id","100");//100
+```
+
+
+
+# 三、$.ajax()
+
+## 3.1 $.ajax请求格式
+
+
+
+```js
+$.ajax({
+    url:"http://www.microsoft.com",    //请求的url地址
+    dataType:"json",   //返回格式为json
+    async:true,//请求是否异步，默认为异步，这也是ajax重要特性
+    data:{"id":"value"},    //参数值
+    type:"POST",   //请求方式
+    beforeSend:function(){
+        //请求前的处理
+    },
+    success:function(req){
+        //请求成功时处理
+    },
+    complete:function(){
+        //请求完成的处理
+    },
+    error:function(){
+        //请求出错处理
+    }
+});
+```
+
+
+
+
+
+## 3.2 ajax post 提交formdata参数
+
+```js
+　　$.ajax({
+　　　　type:'POST',
+　　　　url:'/url/path',
+　　　　data:formdata,
+　　　　/**
+　　　　 *必须false才会自动加上正确的Content-Type
+　　　　*/
+　　　　contentType:false,
+　　　　/**
+　　　　* 必须false才会避开jQuery对 formdata 的默认处理
+　　　　* XMLHttpRequest会对 formdata 进行正确的处理
+　　　　*/
+        dataType: "json",
+　　　　processData:false,
+      async:false,
+　　    success: function (result) {
+                    resolve(result.data)
+                },
+                error: function () {
+                    console.log("上传失败！");
+                };
+
+});
+```
+
+
+

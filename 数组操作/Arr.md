@@ -201,13 +201,19 @@ array.find(function(currentValue, index, arr)
 其中currentValue为当前项，index为当前索引，arr为当前数组
 ```
 
+## 6、findIndex() 查找符合条件的索引
+
+```js
+[1,2].findIndex(e=>e==1)
+//0
+```
 
 
-## 6、some()根据条件遍历arr的everyObj是否符合条件
+
+## 7、some()根据条件遍历arr的everyObj是否符合条件
 
 ```js
     #some()方法  判断数据中的每一个对象是否符合条件,有一个符合则返回true
-        #全都不符合那么就返回false
           //检查是否有数组元素大于等于10：
       function isBigEnough(element, index, array) {
         return element >= 10;
@@ -222,7 +228,7 @@ array.find(function(currentValue, index, arr)
 
 
 
-## 7、every()查看arr中的每一个是否都符合条件
+## 8、every()查看arr中的每一个是否都符合条件
 
 ```js
   //测试是否所有数组元素都大于等于10：
@@ -238,7 +244,7 @@ array.find(function(currentValue, index, arr)
       // passed is true
 ```
 
-## 8、indexOf() 查找符合条件的索引
+## 9、indexOf() 查找符合条件的索引
 
 ```js
   //查找符合条件的元素位于的索引：
@@ -252,20 +258,11 @@ array.find(function(currentValue, index, arr)
 // index is -1
 ```
 
+## 
 
 
 
-
-## 数组函数链式编程
-
-```js
-let arrs=nums.filter(n=> n<=100).map(n=>n*2).reduce((n,a,index)=>n+a)
-#结果返回 240
-```
-
-
-
-## 9、sort数组排序
+## 10、sort数组排序
 
 + **sort** 直接调用返回的是根据字母排序
 + 也可根据数字大小排序
@@ -290,9 +287,12 @@ let arrs=nums.filter(n=> n<=100).map(n=>n*2).reduce((n,a,index)=>n+a)
 //[{id: 2},{id: 3},{id: 5},{id: 6},{id: 7},{id: 9},]
 ```
 
+## 11、数组函数链式编程
 
-
-
+```js
+let arrs=nums.filter(n=> n<=100).map(n=>n*2).reduce((n,a,index)=>n+a)
+#结果返回 240
+```
 
 
 

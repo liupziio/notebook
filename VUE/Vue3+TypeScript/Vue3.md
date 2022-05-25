@@ -1,6 +1,6 @@
-# vue源码
+# Vue3基本使用
 
-## 1、三大核心系统
+## 一、Vue三大核心系统
 
 + **Compiler模块** : 编译模板系统
 + **Runtime模块**：也可以称之为Renderer模块，真正的渲染模块；
@@ -8,11 +8,486 @@
 
 
 
+## 二、Vue3+vite+Element-Plus+prettier+pinia(vueX5) 搭建
 
 
-# 一、组件
 
-## 1、异步组件
+### 1、常见问题
+
+#### 1.1 别名配置
+
+ [vite 官网 resolve-alias](https://cn.vitejs.dev/config/#resolve-alias)
+
++ 在项目中的 **vite.config.ts** 文件中修改
+
+```typescript
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import AutoImport from 'unplugin-auto-import/vite';//按需自动导入element-plus组件插件
+import Components from 'unplugin-vue-components/vite';//按需自动导入element-plus组件插件
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';//按需自动导入组件插件
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [
+    vue(),
+    AutoImport({
+      resolvers: [ElementPlusResolver()]
+    }),
+    Components({
+      resolvers: [ElementPlusResolver()]
+    })
+  ],
+  server: {
+    port: 8080
+  },
+  resolve: {
+    alias: {//这里设置别名
+      '@': '/src',
+      components: '/src/components'
+    }
+  }
+});
+
+```
+
++ **注意：** 以上设置完之后可以使用，但是编辑器会标红色，很不爽
+
+![image-20220329100840029](Vue3.assets/image-20220329100840029.png)
+
+
+
++ 所以需要处理
+  + 在 **tsconfig.json** 文件中设置
+
+```json
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "useDefineForClassFields": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
++    "paths": {
++      "@/*": ["./src/*"],
++      "components/*": ["./src/components/*"]
++    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+
+```
+
+
+
+#### 1.2 环境变量与模式
+
+[vite官网说明](https://cn.vitejs.dev/guide/env-and-mode.html)  
+
+##### 1.2.1 环境变量
+
++ 环境变量与webpack类似，但是使用方式不同
+
+```typescript
+//vite的环境变量在这个下边
+console.log(import.meta.env);
+```
+
+Vite 在一个特殊的 **`import.meta.env`** 对象上暴露环境变量。这里有一些在所有情况下都可以使用的内建变量：
+
+- **`import.meta.env.MODE`**: {string} 应用运行的[模式](https://cn.vitejs.dev/guide/env-and-mode.html#modes)。
+- **`import.meta.env.BASE_URL`**: {string} 部署应用时的基本 URL。他由[`base` 配置项](https://cn.vitejs.dev/config/#base)决定。
+- **`import.meta.env.PROD`**: {boolean} 应用是否运行在生产环境。
+- **`import.meta.env.DEV`**: {boolean} 应用是否运行在开发环境 (永远与 `import.meta.env.PROD`相反)。
+
+##### .env文件
+
+```typescript
+.env                # 所有情况下都会加载
+.env.local          # 所有情况下都会加载，但会被 git 忽略
+.env.[mode]         # 只在指定模式下加载
+.env.[mode].local   # 只在指定模式下加载，但会被 git 忽略
+```
+
++ 并且在环境变量中只有 **VITE** 为前缀时候才会暴露出来
+  + 也可以 [自定义](https://cn.vitejs.dev/guide/env-and-mode.html#env-files) 
+
+```shell
+VITE_SOME_KEY=123
+```
+
+
+
+##### 1.2.2运行模式
+
+ 默认情况下，开发服务器 (`dev` 命令) 运行在 `development` (开发) 模式，而 `build` 命令则运行在 `production` (生产) 模式。
+
+
+
++ 运行时会去运行 .env.`production` 等文件
+
+
+
+
+
+### 2、代码辅助配置
+
+
+
+#### 2.1 代码格式化配置
+
+##### 2.1.1 集成editorconfig配置
+
++ [EditorConfig](https://editorconfig.org/)  有助于为不同 IDE 编辑器上处理同一项目的多个开发人员维护一致的编码风格。
++ 在根目录下创建文件 .editorconfig
+
+```yaml
+
+root = true
+
+[*] # 表示所有文件适用
+charset = utf-8 # 设置文件字符集为 utf-8
+indent_style = space # 缩进风格（tab | space）
+indent_size = 2 # 缩进大小
+end_of_line = lf # 控制换行类型(lf | cr | crlf)
+trim_trailing_whitespace = true # 去除行首的任意空白字符
+insert_final_newline = true # 始终在文件末尾插入一个新行
+
+[*.md] # 表示仅 md 文件适用以下规则
+max_line_length = off
+trim_trailing_whitespace = false
+```
+
++ VSCode需要依赖一个插件：EditorConfig for VS Code
+
+![image-20220329105508931](Vue3.assets/image-20220329105508931.png)
+
+
+
+##### 2.1.2 使用prettier工具
+
++ [Prettier](https://www.prettier.cn/)  是什么？
+  + 代码格式化工具
++ 安装prettier
+
+```shell
+npm install prettier -D
+```
+
++ 在根目录下创建 **.prettierrc** 文件 并配置
+  + seTabs：是否使用tab来缩进，选择false；
+  + tabWidth：tab是空格的情况下，是几个空格，选择2个；
+  + printWidth：行字符的长度；
+  + singleQuote：使用单引号还是双引号，选择true，使用单引号；
+  + trailingComma：在多行输入的尾逗号是否添加，设置为 `none`；
+  + semi：语句末尾是否要加分号，默认值true，选择false表示不加；
+
+```json
+{
+  "useTabs": false,
+  "tabWidth": 2,
+  "printWidth": 100,
+  "singleQuote": true,
+  "trailingComma": "none",
+  "semi": true
+}
+```
+
++ 在根目录创建 **.prettierignore** 忽略代码格式化文件
+
+```
+/dist/*
+.local
+.output.js
+/node_modules/**
+
+**/*.svg
+**/*.sh
+
+/public/*
+```
+
++ VSCode需要安装prettier的插件
+
+![image-20220329111121514](Vue3.assets/image-20220329111121514.png)
+
+
+
++ 也可在 **package.json** 加入脚本吧所有的代码格式化
+
+```json
+ "prettier": "prettier --write ."
+```
+
+
+
+
+
+#### 2.2 样式重置配置
+
++ 使用 [normalize.css](http://necolas.github.io/normalize.css/) 重置样式
+
+```shell
+npm install normalize.css
+```
+
++ 在 main.ts 中引入 
+
+![image-20220329104742804](Vue3.assets/image-20220329104742804.png)
+
+
+
+### 3、集成Pinia
+
+#### 3.1 [Pinia](https://pinia.vuejs.org/) 说明
+
++  [vue 官方说明](https://vuejs.org/guide/scaling-up/state-management.html#pinia)
+  + 大致意思就是最开始vue团队成员最开始想探索一下vueX下一次迭代是什么样子，后来意识到 **Pinia** 已经实现了Vuex5想实现的大部分内容， **pinia** 相对于vuex来说提供了更简单使用的 API ，并且提供了 **Composition-API** 风格的 API，最重要的是，在与 **TypeScript 一起使用时具有可靠的类型推断支持**。
++ 在 pinia 中没有了vuex 中的 **mutations** 与 **modules**  配置项
+  + state 装载 状态值
+  + actions 支持同步和异步
+  + getters 接收器
+  + 推荐 在  actions 更改 state 规范修改的区域
+
+
+
+#### 3.2 [Pinia](https://pinia.vuejs.org/)  使用
+
+##### 3.2.1 安装
+
+```shell
+yarn add pinia
+# or with npm
+npm install pinia
+```
+
+##### 3.2.2 使用
+
+1. 在 **main.ts** 中 将 pinia 插件 注册给app
+
+```typescript
+import { createApp } from 'vue';
+import App from './App.vue';
+import { createPinia } from 'pinia';//引入pinia的创建函数
+const app = createApp(App);
+app.use(createPinia());
+
+app.mount('#app');
+
+```
+
+2. store文件夹下创建
+
+   + store/index.ts
+
+   ```typescript
+   import useMainStore from './main/main';
+   import useOtherStore from './main/other';
+   export { useOtherStore, useMainStore };
+   ```
+
+   + store/main/main.ts
+
+   ```typescript
+   //pinia 去除 mutations，只有 state，getters，actions；
+   //actions 中 可以执行异步与同步 （官方建议在actions中修改state中的值）
+   
+   import { defineStore } from 'pinia';
+   import useOtherStore from './other';
+   
+   export default defineStore({
+     id: 'login', // id必填，且需要唯一
+     state: () => {
+       return {
+         name: '张三'
+       };
+     },
+     actions: {
+       // 修改当前store的name值
+       updateName(name: string) {
+         this.name = name;
+       },
+       // 修改otherStore中的值
+       setOtherName() {
+         useOtherStore().updateOther(this.name);
+       }
+     },
+     getters: {
+       // 接收器(计算属性)
+       getNameJoin: (state) => {
+         return function name(test: string) {
+           return state.name + test;
+         };
+       }
+     },
+   });
+   
+   ```
+
+   + store/main/other.ts
+
+   ```typescript
+   //测试代表其他状态
+   import { defineStore } from 'pinia';
+   
+   export default defineStore({
+     id: 'other', // id必填，且需要唯一
+     state: () => {
+       return {
+         name: 'otherName'
+       };
+     },
+     actions: {
+       updateOther(name: string) {
+         this.name = name;
+       }
+     },
+     getters: {}
+   });
+   
+   ```
+
+   
+
+3. vue页面中显示
+
+```vue
+<template>
+  <div class="main-container">
+    <h2>MainStore中的name：{{ mainStore.name }}</h2>
+    <el-button type="primary" @click="setMainStore">测试变化Mainstore</el-button>
+    <h2>OtherStore中的name：{{ otherStore.name }}</h2>
+    <el-button type="primary" @click="setOtherStore"
+      >测试利用mainStore中的方法变化otherStore</el-button
+    >
+  </div>
+</template>
+<script lang="ts">
+import { defineComponent, ref, computed } from 'vue';
+import { useMainStore, useOtherStore } from '@/store';
+
+export default defineComponent({
+  setup() {
+    // 获取main的状态
+    const mainStore = useMainStore();
+    const otherStore = useOtherStore();
+
+    const setMainStore = () => {
+      // Pinia的 actions 行为
+      mainStore.updateName('变化后的mainStore-name');
+    };
+    //动态获取mainStore下的接收器getNameJoin
+    const mainStoreJoin = computed(() => mainStore.getNameJoin('test'));
+    // 利用main中的方法变化other中的值
+    const setOtherStore = () => {
+      mainStore.setOtherName();
+    };
+
+    return { mainStore, otherStore, setOtherStore, setMainStore, mainStoreJoin };
+  }
+});
+</script>
+<style lang="scss" scoped>
+</style>
+
+```
+
+
+
+#### 3.3 数据持久化
+
+##### 3.3.1 安装与说明
+
++ 使用 **pinia-plugin-persist** 插件辅助数据持久化
+
+```shell
+npm i pinia-plugin-persist --save
+```
+
++  **pinia-plugin-persist**  插件会将数据存储在 Session Storage中
+
+![image-20220329160208409](Vue3.assets/image-20220329160208409.png)
+
+
+
+##### 3.3.2 使用
+
++ 需在 **main.ts** 文件中
+
+```typescript
+import { createApp } from 'vue';
+import App from './App.vue';
+import piniaPluginPersist from 'pinia-plugin-persist'; //数据持久化 存储在Session Storage
+import { createPinia } from 'pinia';
+
+const app = createApp(App);
+app.use(createPinia().use(piniaPluginPersist));//pinia注册piniaPluginPersist插件并注册给app
+
+app.mount('#app');
+
+```
+
++ 在需要持久化的store中
+  + 加入 **persist** 并把 **enabled** 属性值设置为 **true**
+
+```typescript
+//测试代表其他状态
+import { defineStore } from 'pinia';
+
+export default defineStore({
+  id: 'other', // id必填，且需要唯一
+  state: () => {
+    return {
+      name: 'otherName'
+    };
+  },
+  actions: {
+    updateOther(name: string) {
+      this.name = name;
+    }
+  },
+  getters: {},
+  // 开启数据缓存
+  persist: {
+    enabled: true
+  }
+});
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 4、Element-Plus
+
+
+
+
+
+
+
+
+
+
+
+## 三、组件
+
+### 1、异步组件
 
 
 
@@ -78,7 +553,7 @@ export default {
 
 
 
-## 2、Suspense插槽 处理组件不显示
+### 2、Suspense插槽 处理组件不显示
 
 **Suspense vue试验性API 随时修改**
 
@@ -119,7 +594,7 @@ export default {
 
 
 
-## 3、组件之间的v-model
+### 3、组件之间的v-model
 
 **问：**组件之间的v-model 的应用场景与作用 ？
 
@@ -220,9 +695,9 @@ export default {
 
 
 
-# 二、两种setup使用
+## 四、两种setup使用
 
-## 1、函数式 setup
+### 1、函数式 setup
 
 ```js
 <script lang="ts">
@@ -262,7 +737,7 @@ export default defineComponent({
 
 
 
-## 2、script setup
+### 2、script setup
 
 
 
@@ -300,15 +775,15 @@ onMounted(() => {
 
 
 
-## 3、两者差异
+### 3、两者差异
 
 
 
 
 
-# 三、基础Api
+## 五、基础Api
 
-## 1、customRef（自定义ref）
+### 1、customRef（自定义ref）
 
 + 自定义ref防抖事件
 
@@ -352,7 +827,7 @@ setup() {
 
 
 
-## 2、computed使用
+### 2、computed使用
 
 
 
@@ -394,7 +869,7 @@ setup() {
 
 
 
-## 3、watch的使用
+### 3、watch的使用
 
 ### 两种监听模式
 
@@ -569,7 +1044,7 @@ export default {
 
 
 
-## 4、在setup中使用ref
+### 4、在setup中使用ref
 
 + 在`setup`中定义一个`ref`对象
 + 并设置给行内元素的`ref`即可
@@ -598,7 +1073,7 @@ import { ref, watchEffect } from "vue";
 
 
 
-## 5、render函数与h函数
+### 5、render函数与h函数
 
 
 
@@ -711,11 +1186,11 @@ export default {
 
 
 
-## 6、directives(自定义指令)
+### 6、directives(自定义指令)
 
 
 
-### 1. 基本使用
+#### 1. 基本使用
 
 **说明：**
 
@@ -823,7 +1298,7 @@ app.mount("#app");
 
 
 
-### 2. 指令的生命周期
+#### 2. 指令的生命周期
 
 
 
@@ -831,7 +1306,7 @@ app.mount("#app");
 
 
 
-## 7、teleport（template插入到指定容器中）
+### 7、teleport（template插入到指定容器中）
 
 
 
@@ -866,7 +1341,7 @@ app.mount("#app");
 
 
 
-## 8、全局注册插件(app.use())
+### 8、全局注册插件(app.use())
 
 **说明：**
 
@@ -949,9 +1424,9 @@ setup(props) {
 
 
 
-# 四、Vue中认识jsx
+## 六、Vue中认识jsx
 
-## 1、基本使用
+### 1、基本使用
 
 **目前VueCli 4.5.0 已经默认支持jsx**
 
@@ -1017,15 +1492,13 @@ export default {
 
 
 
-# 五、VueX五大核心
+## 七、VueX五大核心
 
-## 1、state
-
-
-
-## 2、getters
+### 1、state
 
 
+
+### 2、getters
 
 
 
@@ -1035,13 +1508,15 @@ export default {
 
 
 
-# 六、TypeScript 与 Vue3
+
+
+## 八、TypeScript 与 Vue3
 
 
 
-## 1、类型
+### 1、类型
 
-### 1.1 ref () 获取组件   InstanceType
+#### 1.1 ref () 获取组件   InstanceType
 
 >利用 InstanceType (实例类型) 来获取拥有构造函数的实例
 
@@ -1053,7 +1528,7 @@ export default {
 const accountRef = ref<InstanceType<typeof LoginAccount>>()
 ```
 
-### 1.2 使用 Vuex useStore *
+#### 1.2 使用 Vuex useStore *
 
 **问题：**
 
@@ -1087,9 +1562,9 @@ const accountRef = ref<InstanceType<typeof LoginAccount>>()
 
 
 
-## 2、router
+### 2、router
 
-### 2.1 动态路由创建文件
+#### 2.1 动态路由创建文件
 
 > 避免手动创建文件 与 router 映射 使用 corderwhy 的工具
 
@@ -1119,7 +1594,7 @@ coderwhy add3page test -d src/views/main/test
 
 
 
-### 2.2 require.context 加载文件使用
+#### 2.2 require.context 加载文件使用
 
 > **require.context** 是 **webpack** 中的方法，可加载上下文 文件
 
@@ -1140,7 +1615,7 @@ const routeFiles = require.context('../router/main', true, /\.ts/);
 
 
 
-### 2.3 实现动态路由
+#### 2.3 实现动态路由
 
 **注意：**
 
@@ -1274,7 +1749,7 @@ mutations: {
   },
 ```
 
-### 2.4 路由注册执行顺序
+#### 2.4 路由注册执行顺序
 
 ![image-20220121121703169](.\Vue3.assets\image-20220121121703169.png)
 
@@ -1282,13 +1757,13 @@ mutations: {
 
 
 
-## 3、组件中的双向绑定
+### 3、组件中的双向绑定
 
 
 
-### 3.1 方式
+#### 3.1 方式
 
-#### 3.1.1 子组件使用v-bind直接修改props(不推荐)
+##### 3.1.1 子组件使用v-bind直接修改props(不推荐)
 
 **不推荐原因**
 
@@ -1361,7 +1836,7 @@ export const searchFormConfig: IForm = {
 
 
 
-#### 3.1.2 使用组件双向绑定 v-model modelValue (误区)
+##### 3.1.2 使用组件双向绑定 v-model modelValue (误区)
 
 
 
@@ -1400,7 +1875,7 @@ export const searchFormConfig: IForm = {
 
 
 
-#### 3.1.3 使用v-model并使用watch监听(正确用法)
+##### 3.1.3 使用v-model并使用watch监听(正确用法)
 
 **使用方案**
 
